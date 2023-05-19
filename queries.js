@@ -1,135 +1,87 @@
 //const express = require('express');
 const mysql = require('mysql2/promise');
-const { promptUser } = require('./prompt');
-
-//app.use(express.urlencoded({ extended: false }));
-//app.use(express.json());
 
 // Connect to database
 const db = {
       host: 'localhost',
-      // MySQL username,
       user: 'root',
-      // MySQL password
-      password: 'Apple2eat@',
+      password: 'password',
       database: 'hr_db'
     };
 
   // Function to view all departments
   const viewDepartments = async () => {
-    // Connect to database
     const connection = await mysql.createConnection(db);
-  
-    // Query to retrieve all departments
-    const [rows] = await connection.query('SELECT name as "Department Name", id as "Department ID" FROM departments');
-  
-    // Log results to console
-    console.table(rows);
-    
-    // End database connection
-    connection.end();
-    promptUser();
+    const [selection] = await connection.query('SELECT name as "Department Name", id as "Department ID" FROM departments');
+    return selection;
+  connection.end();
   };
   
   // Function to view all roles
-  const viewAllRoles = async () => {
-    // Connect to database
+  const viewRoles = async () => {
     const connection = await mysql.createConnection(db);
-  
-    // Query to retrieve all roles
-    const [rows] = await connection.query('SELECT * FROM role');
-  
-    // Log results to console
-    console.log(rows);
-  
-    // End database connection
-    connection.end();
+    const [selection] = await connection.query('SELECT title AS "job title",' +
+    ' roles.id AS "role_id", departments.name AS "Department", salary ' +
+    'FROM roles ' +
+    'JOIN departments ON roles.department_id = departments.id');
+    return selection;
+  connection.end();
   };
   
   // Function to view all employees
-  const viewAllEmployees = async () => {
-    // Connect to database
+  const viewEmployees = async () => {
     const connection = await mysql.createConnection(db);
-  
-    // Query to retrieve all employees
-    const [rows] = await connection.query('SELECT * FROM employee');
-  
-    // Log results to console
-    console.log(rows);
-  
-    // End database connection
-    connection.end();
+    const [selection] = await connection.query('SELECT employees.id AS "Employee ID", first_name AS "First Name", ' +
+    'last_name AS "Last Name", title AS "Job Title", ' +
+    'departments.name AS "Department", salary, manager_id as "Manager ID" ' +
+    'FROM employees ' +
+    'JOIN roles ON employees.role_id = roles.id ' +
+    'JOIN departments ON roles.department_id = departments.id');
+    return selection;
+  connection.end();
   };
   
   // Function to add a department
   const addDepartment = async (name) => {
-    // Connect to database
     const connection = await mysql.createConnection(db);
-  
-    // Query to add department
-    await connection.query('INSERT INTO department (name) VALUES (?)', [name]);
-  
-    // Log success message to console
-    console.log('Department added successfully.');
-  
-    // End database connection
+    await connection.query('INSERT INTO departments (name) VALUES (?)', [name]);
+    console.log('New department added successfully.');
     connection.end();
   };
   
   // Function to add a role
   const addRole = async (title, salary, departmentId) => {
-    // Connect to database
     const connection = await mysql.createConnection(db);
-  
-    // Query to add role
-    await connection.query('INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)', [title, salary, departmentId]);
-  
-    // Log success message to console
-    console.log('Role added successfully.');
-  
-    // End database connection
+    await connection.query('INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)', [title, salary, departmentId]);
+    console.log('New role added successfully.');
     connection.end();
   };
   
   // Function to add an employee
   const addEmployee = async (firstName, lastName, roleId, managerId) => {
-    // Connect to database
     const connection = await mysql.createConnection(db);
-  
-    // Query to add employee
-    await connection.query('INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)', [firstName, lastName, roleId, managerId]);
-  
-    // Log success message to console
-    console.log('Employee added successfully.');
-  
-    // End database connection
+    await connection.query('INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)', [firstName, lastName, roleId, managerId]);
+    console.log('New Employee added successfully.');
     connection.end();
   };
   
   // Function to update an employee's role
-  const updateEmployeeRole = async (employeeId, newRoleId) => {
-    // Connect to database
+  const updateEmployee = async (employeeId, newRoleId) => {
     const connection = await mysql.createConnection(db);
-  
-    // Query to update employee's role
-    await connection.query('UPDATE employee SET role_id = ? WHERE id = ?', [newRoleId, employeeId]);
-  
-    // Log success message to console
+    await connection.query('UPDATE employees SET role_id = ? WHERE id = ?', [newRoleId, employeeId]);
     console.log('Employee role updated successfully.');
-  
-    // End database connection
     connection.end();
   };
   
   // Export all functions
   module.exports = {
     viewDepartments,
-   
-  
-
-
-
-  
+    viewRoles,  
+    viewEmployees,
+    addDepartment,
+    addRole,
+    addEmployee,
+    updateEmployee,
   
    // list of the functions here
   };
